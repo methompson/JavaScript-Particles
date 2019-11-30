@@ -6,8 +6,8 @@ let controller;
 if (canvas.getContext){
   controller = new CanvasController(canvas, 400, 400);
   controller.addEmitter(400, 200, 200);
-  controller.addEmitter(500, 50, 50);
-  controller.addEmitter(5000, 300, 300);
+  // controller.addEmitter(500, 50, 50);
+  // controller.addEmitter(5000, 300, 300);
 }
 
 document.getElementById('startBtn').addEventListener('click', () => {

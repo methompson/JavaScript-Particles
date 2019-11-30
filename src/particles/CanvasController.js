@@ -48,7 +48,8 @@ class CanvasController{
     const ctx = this.canvas.getContext('2d');
 
     this.emitters.forEach( (e) => {
-      e.particles.forEach( (p) => {
+      Object.keys(e.particles).forEach((id) => {
+        const p = e.particles[id];
         const point = new Path2D();
         point.rect(p.posX, p.posY, 1, 1);
         ctx.stroke(point);
@@ -74,7 +75,7 @@ class CanvasController{
 
     // We'll prevent weirdness when the lastIteration time is 0 and prevent
     // relying on the particles to figure this out.
-    if (this.lastIteration == 0){
+    if (this.lastIteration == 0 && this.paused != true){
       this.lastIteration = this.getNow();
       setTimeout(() => {
         this.mainLoop();
