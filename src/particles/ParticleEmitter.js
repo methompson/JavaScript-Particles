@@ -1,6 +1,5 @@
 import {Particle} from './Particle.js';
-import {FRAME_RATE_LIMIT} from './constants.js';
-import {randomNum} from './utils.js';
+import {randomNum} from '../utils.js';
 
 class ParticleEmitter {
   constructor(maxParticles = 50, posX = 0, posY = 0, canvasWidth = 0, canvasHeight = 0){
@@ -63,10 +62,16 @@ class ParticleEmitter {
   // - Move each particle based upon their current location and velocity
   // - Determine which particles are out of bounds and remove them from the particle list
   // - Add new particles to bring the Total Particles value up to Max Particles value 
-  iterateParticles(){
+  iterateParticles(now, lastIteration){
+    if (lastIteration === 0 ){
+      return;
+    }
+
     this.particles.forEach((particle) => {
-      particle.posX += particle.velocityX / FRAME_RATE_LIMIT;
-      particle.posY += particle.velocityY / FRAME_RATE_LIMIT;
+      let travelX = (particle.velocityX / 1000) * (now - lastIteration);
+      let travelY = (particle.velocityY / 1000) * (now - lastIteration);
+      particle.posX += travelX;
+      particle.posY += travelY;
     });
 
     this.checkParticles();
