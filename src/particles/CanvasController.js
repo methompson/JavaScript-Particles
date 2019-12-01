@@ -1,5 +1,6 @@
 import {ParticleEmitter} from './ParticleEmitter.js';
 import {FRAME_RATE_LIMIT} from '../constants.js';
+import {ForceInterface} from './forces/BaseForce.js';
 
 class CanvasController{
   constructor(canvas, canvasWidth = 200, canvasHeight = 200){
@@ -9,8 +10,8 @@ class CanvasController{
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     
-    this.emitters = [];
-    this.forces = [];
+    this.emitters = {};
+    this.forces = {};
 
     this.maxWaitTime = 1000/FRAME_RATE_LIMIT;
     this.lastIteration = 0;
@@ -41,31 +42,63 @@ class CanvasController{
   clearCanvas(){
     const ctx = this.canvas.getContext('2d');
     ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-  };
+  }
+
+  registerForce(force){
+    if (
+          !(force instanceof ForceInterface)
+      ||  !('id' in force)
+    ){
+      return;
+    }
+
+    this.forces[force.id] = force;
+  }
+
+  registerForceWithEmitter(forceId, emitterId){
+    if (
+          !(emitterId in this.emitters)
+      ||  !(forceId in this.forces)
+    ){
+      return;
+    }
+
+    this.emitters[emitterId].registerForce( this.forces[forceId] );
+  }
+
+  unregisterForceFromEmitter(forceId, emitterId){
+    if (!(emitterId in this.emitters)){
+      return;
+    }
+
+    this.emitters[emitterId].unregisterForce(forceId);
+  }
 
   drawParticles(){
     const drawStartTime = (new Date()).getTime();
     const ctx = this.canvas.getContext('2d');
 
-    this.emitters.forEach( (e) => {
-      Object.keys(e.particles).forEach((id) => {
-        const p = e.particles[id];
+    // this.emitters.forEach( (e) => {
+    Object.keys(this.emitters).forEach((emitterId) => {
+      const particles = this.emitters[emitterId].particles
+      Object.keys(particles).forEach((id) => {
+        const p = particles[id];
         const point = new Path2D();
         point.rect(p.posX, p.posY, 1, 1);
         ctx.stroke(point);
       });
     });
-  };
+  }
 
   iterateParticles(now){
-    this.emitters.forEach( (e) => {
-      e.iterateParticles(now, this.lastIteration);
-    })
-  };
+    Object.keys(this.emitters).forEach((id) => {
+      this.emitters[id].iterateParticles(now, this.lastIteration);
+    });
+  }
 
   getNow(){
     return (new Date()).getTime();
-  };
+  }
 
   mainLoop(){
 
@@ -114,15 +147,8 @@ class CanvasController{
 
   addEmitter(maxParticles = 50, posX = 0, posY = 0){
     const p = new ParticleEmitter(maxParticles, posX, posY, this.canvasWidth, this.canvasHeight);
-    this.emitters.push(p);
+    this.emitters[p.id] = p;
   }
-
-  addForce(force = null){
-    if (!force){
-      return;
-    }
-    this.forces.push(force);
-  };
 };
 
 export {

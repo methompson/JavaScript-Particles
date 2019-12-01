@@ -1,19 +1,21 @@
 import {Particle} from './Particle.js';
 import {randomNum} from '../utils.js';
-import {GravityForce} from './forces/GravityForce.js'
-// import {uuidv4} from 'uuid/v4';
-const uuidv4 = require('uuid/v4');
+import {ForceInterface} from './forces/BaseForce.js'
+import * as uuidv4 from 'uuid/v4.js';
+// const uuidv4 = require('uuid/v4');
 
 class ParticleEmitter {
   constructor(maxParticles = 50, posX = 0, posY = 0, canvasWidth = 0, canvasHeight = 0){
+    this.id = uuidv4();
+    
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.particles = {};
     this.maxParticles = maxParticles;
 
-    this.forces = [];
-    const g = new GravityForce( 98 );
-    this.forces.push( g );
+    this.forces = {};
+    // const g = new GravityForce( 98 );
+    // this.forces.push( g );
 
     this.posX = posX;
     this.posY = posY;
@@ -22,7 +24,7 @@ class ParticleEmitter {
   }
 
   // Check whether points are out of bounds
-  checkParticles(){
+  checkParticleBoundaries(){
     const particlesToRemove = [];
     Object.keys(this.particles).forEach( (id) => {
       const particle = this.particles[id];
@@ -38,26 +40,56 @@ class ParticleEmitter {
 
     if (particlesToRemove.length > 0){
 
-      // We reverse the particles to remove array so that the earlier splices don't
-      // affect the later position splices.
-      // const parts = particlesToRemove.sort().reverse();
-
       particlesToRemove.forEach((id) => {
-        delete this.particles[id];;
+        // We're checking if the total particles exceed the max particles.
+        // If the total particles exeeds max particles, we delete the particle
+        // entry in the object. Otherwise, we just create a new particle
+        // and insert it into the old particle's object id. This saves us
+        // a little time above with generating a new UUID or running the delete command
+        if (Object.keys(this.particles).length > this.maxParticles){
+          delete this.particles[id];
+        } else {
+          this.particles[id] = this.makeRandomParticle();
+        }
       });
     }
   }
 
+  registerForce(force){
+    if (
+          !(force instanceof ForceInterface)
+      ||  !('id' in force)
+    ){
+      return;
+    }
+
+    this.forces[force.id] = force;
+  }
+
+  unregisterForce(forceId){
+
+    if (!(forceId in this.forces)){
+      return;
+    }
+
+    delete this.forces[forceId];
+
+  }
+
+  makeRandomParticle(){
+    let velocityX = randomNum(-100, 100);
+    let velocityY = randomNum(-100, 100);
+
+    // We need to make sure that the velocity isn't 0, or else the particle will not move.
+    velocityX = velocityX == 0 ? 1 : velocityX;
+    velocityY = velocityY == 0 ? 1 : velocityY;
+
+    return new Particle(this.posX, this.posY, velocityX, velocityY);
+  }
+
   makeParticles(numParticles = 0){
     for (let i = 0; i < numParticles; ++i){
-      let velocityX = randomNum(-100, 100);
-      let velocityY = randomNum(-100, 100);
-
-      // We need to make sure that the velocity isn't 0, or else the particle will not move.
-      velocityX = velocityX == 0 ? 1 : velocityX;
-      velocityY = velocityY == 0 ? 1 : velocityY;
-
-      this.particles[uuidv4()] = new Particle(this.posX, this.posY, velocityX, velocityY);
+      this.particles[uuidv4()] = this.makeRandomParticle();
     }
   }
 
@@ -81,7 +113,7 @@ class ParticleEmitter {
       particle.posY += travelY;
     });
 
-    this.checkParticles();
+    this.checkParticleBoundaries();
 
     if (this.maxParticles != Object.keys(this.particles).length){
       this.makeParticles(this.maxParticles - Object.keys(this.particles).length);
@@ -89,8 +121,8 @@ class ParticleEmitter {
   }
 
   applyForces(particle, now, lastIteration){
-    this.forces.forEach( (f) => {
-      f.affectParticle(particle, now, lastIteration);
+    Object.keys(this.forces).forEach((id) => {
+      this.forces[id].affectParticle(particle, now, lastIteration);
     });
   }
 };
