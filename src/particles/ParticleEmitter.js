@@ -5,7 +5,7 @@ import * as uuidv4 from 'uuid/v4.js';
 // const uuidv4 = require('uuid/v4');
 
 class ParticleEmitter {
-  constructor(maxParticles = 50, posX = 0, posY = 0, canvasWidth = 0, canvasHeight = 0){
+  constructor(maxParticles = 50, posX = 0, posY = 0, canvasWidth = 0, canvasHeight = 0, options = {}){
     this.id = uuidv4();
     
     this.canvasWidth = canvasWidth;

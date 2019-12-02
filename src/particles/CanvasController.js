@@ -44,6 +44,25 @@ class CanvasController{
     ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
   }
 
+  registerEmitter(emitter){
+    if (
+          !(emitter instanceof ParticleEmitter)
+      ||  !('id' in emitter)
+    ){
+      return;
+    }
+
+    this.emitters[emitter.id] = emitter;
+  }
+
+  unregisterEmitter(emitterId){
+    if (!(emitterId in this.emitters)){
+      return;
+    }
+
+    delete this.emitters[emitterId];
+  }
+
   registerForce(force){
     if (
           !(force instanceof ForceInterface)

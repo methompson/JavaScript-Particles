@@ -1,14 +1,30 @@
 {
   "name": "js-particles",
-  "version": "1.0.0",
-  "description": "JavaScript Particles",
+  "version": "0.1.0",
+  "description": "Particle Generator in JavaScript",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx webpack --config webpack.config.js",
     "start": "webpack-dev-server --open"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/methompson/JavaScript-Particles.git"
+  },
+  "keywords": [
+    "JavaScript",
+    "Particles",
+    "2D",
+    "Canvas",
+    "Special Effects"
+  ],
+  "author": {
+    "name": "Mathew Thompson",
+    "email": "met@methompson.com",
+    "url": "https://github.com/methompson"
+  },
+  "homepage": "https://github.com/methompson/JavaScript-Particles.git",
+  "license": "MIT",
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^3.2.0",
